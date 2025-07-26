@@ -156,7 +156,6 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
     error('Error cloning lazy.nvim:\n' .. out)
   end
 end
-
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
@@ -610,100 +609,102 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
-
-        lua_ls = {
-          -- cmd = { ... },
-          -- filetypes = { ... },
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
-              },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
-            },
-          },
-        },
-        intelephense = {
-          settings = {
-            intelephense = {
-              stubs = {
-                'bcmath',
-                'bz2',
-                'Core',
-                'curl',
-                'date',
-                'dom',
-                'fileinfo',
-                'filter',
-                'gd',
-                'gettext',
-                'hash',
-                'iconv',
-                'imap',
-                'intl',
-                'json',
-                'libxml',
-                'mbstring',
-                'mcrypt',
-                'mysql',
-                'mysqli',
-                'password',
-                'pcntl',
-                'pcre',
-                'PDO',
-                'pdo_mysql',
-                'Phar',
-                'readline',
-                'regex',
-                'session',
-                'SimpleXML',
-                'sockets',
-                'sodium',
-                'standard',
-                'superglobals',
-                'tokenizer',
-                'xml',
-                'xdebug',
-                'xmlreader',
-                'xmlwriter',
-                'yaml',
-                'zip',
-                'zlib',
-                'wordpress',
-                'wordpress-stubs',
-                'woocommerce-stubs',
-                'acf-pro-stubs',
-                'wordpress-globals',
-                'wp-cli-stubs',
-                'genesis-stubs',
-                'polylang-stubs',
-              },
-              environment = {
-                includePaths = {
-                  '~/.config/composer/vendor/php-stubs/',
-                  '~/.config/composer/vendor/wpsyntex/',
+        mason = {
+          lua_ls = {
+            -- cmd = { ... },
+            -- filetypes = { ... },
+            -- capabilities = {},
+            settings = {
+              Lua = {
+                completion = {
+                  callSnippet = 'Replace',
                 },
-              },
-              files = {
-                maxSize = 10000000,
-                exclude = {
-                  '**/node_modules/**',
-                  '**/vendor/**/test/**',
-                  '**/vendor/**/tests/**',
-                  '**/cache/**',
-                  '**/tmp/**',
-                },
-              },
-              completion = {
-                triggerParameterHints = true,
-                maxItems = 100,
-                insertUseDeclaration = true,
+                -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+                -- diagnostics = { disable = { 'missing-fields' } },
               },
             },
           },
+          intelephense = {
+            settings = {
+              intelephense = {
+                stubs = {
+                  'bcmath',
+                  'bz2',
+                  'Core',
+                  'curl',
+                  'date',
+                  'dom',
+                  'fileinfo',
+                  'filter',
+                  'gd',
+                  'gettext',
+                  'hash',
+                  'iconv',
+                  'imap',
+                  'intl',
+                  'json',
+                  'libxml',
+                  'mbstring',
+                  'mcrypt',
+                  'mysql',
+                  'mysqli',
+                  'password',
+                  'pcntl',
+                  'pcre',
+                  'PDO',
+                  'pdo_mysql',
+                  'Phar',
+                  'readline',
+                  'regex',
+                  'session',
+                  'SimpleXML',
+                  'sockets',
+                  'sodium',
+                  'standard',
+                  'superglobals',
+                  'tokenizer',
+                  'xml',
+                  'xdebug',
+                  'xmlreader',
+                  'xmlwriter',
+                  'yaml',
+                  'zip',
+                  'zlib',
+                  'wordpress',
+                  'wordpress-stubs',
+                  'woocommerce-stubs',
+                  'acf-pro-stubs',
+                  'wordpress-globals',
+                  'wp-cli-stubs',
+                  'genesis-stubs',
+                  'polylang-stubs',
+                },
+                environment = {
+                  includePaths = {
+                    '~/.config/composer/vendor/php-stubs/',
+                    '~/.config/composer/vendor/wpsyntex/',
+                  },
+                },
+                files = {
+                  maxSize = 10000000,
+                  exclude = {
+                    '**/node_modules/**',
+                    '**/vendor/**/test/**',
+                    '**/vendor/**/tests/**',
+                    '**/cache/**',
+                    '**/tmp/**',
+                  },
+                },
+                completion = {
+                  triggerParameterHints = true,
+                  maxItems = 100,
+                  insertUseDeclaration = true,
+                },
+              },
+            },
+          },
         },
+        others = {},
       }
 
       -- Ensure the servers and tools above are installed
@@ -719,31 +720,26 @@ require('lazy').setup({
       --
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
-      local ensure_installed = vim.tbl_keys(servers or {})
+      local ensure_installed = vim.tbl_keys(servers.mason or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      -- Either merge all additional server configs from the `servers.mason` and `servers.others` tables
+      -- to the default language server configs as provided by nvim-lspconfig or
+      -- define a custom server config that's unavailable on nvim-lspconfig.
+      for server, config in pairs(vim.tbl_extend('keep', servers.mason, servers.others)) do
+        if not vim.tbl_isempty(config) then
+          vim.lsp.config(server, config)
+        end
+      end
       require('mason-lspconfig').setup {
-        ensure_installed = { 'lua_ls', 'intelephense' },
-        automatic_installation = false,
-        -- Deprecated...
-        -- handlers = {
-        --   function(server_name)
-        --     local server = servers[server_name] or {}
-        --     -- This handles overriding only values explicitly passed
-        --     -- by the server configuration above. Useful when disabling
-        --     -- certain features of an LSP (for example, turning off formatting for ts_ls)
-        --     server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-        --     require('lspconfig')[server_name].setup(server)
-        --   end,
-        -- },
+        ensure_installed = {},
+        automatic_enable = true,
       }
-      local lspconfig = require 'lspconfig'
-      for _, server_name in ipairs(require('mason-lspconfig').get_installed_servers()) do
-        local server = servers[server_name] or {}
-        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-        lspconfig[server_name].setup(server)
+      -- Manually run vim.lsp.enable for all language servers that are *not* installed via Mason
+      if not vim.tbl_isempty(servers.others) then
+        vim.lsp.enable(vim.tbl_keys(servers.others))
       end
     end,
   },
