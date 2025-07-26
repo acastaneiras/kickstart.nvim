@@ -625,6 +625,85 @@ require('lazy').setup({
             },
           },
         },
+        intelephense = {
+          settings = {
+            intelephense = {
+              stubs = {
+                'bcmath',
+                'bz2',
+                'Core',
+                'curl',
+                'date',
+                'dom',
+                'fileinfo',
+                'filter',
+                'gd',
+                'gettext',
+                'hash',
+                'iconv',
+                'imap',
+                'intl',
+                'json',
+                'libxml',
+                'mbstring',
+                'mcrypt',
+                'mysql',
+                'mysqli',
+                'password',
+                'pcntl',
+                'pcre',
+                'PDO',
+                'pdo_mysql',
+                'Phar',
+                'readline',
+                'regex',
+                'session',
+                'SimpleXML',
+                'sockets',
+                'sodium',
+                'standard',
+                'superglobals',
+                'tokenizer',
+                'xml',
+                'xdebug',
+                'xmlreader',
+                'xmlwriter',
+                'yaml',
+                'zip',
+                'zlib',
+                'wordpress',
+                'wordpress-stubs',
+                'woocommerce-stubs',
+                'acf-pro-stubs',
+                'wordpress-globals',
+                'wp-cli-stubs',
+                'genesis-stubs',
+                'polylang-stubs',
+              },
+              environment = {
+                includePaths = {
+                  '~/.config/composer/vendor/php-stubs/',
+                  '~/.config/composer/vendor/wpsyntex/',
+                },
+              },
+              files = {
+                maxSize = 10000000,
+                exclude = {
+                  '**/node_modules/**',
+                  '**/vendor/**/test/**',
+                  '**/vendor/**/tests/**',
+                  '**/cache/**',
+                  '**/tmp/**',
+                },
+              },
+              completion = {
+                triggerParameterHints = true,
+                maxItems = 100,
+                insertUseDeclaration = true,
+              },
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -645,21 +724,27 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = { 'lua_ls', 'intelephense' },
         automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
+        -- Deprecated...
+        -- handlers = {
+        --   function(server_name)
+        --     local server = servers[server_name] or {}
+        --     -- This handles overriding only values explicitly passed
+        --     -- by the server configuration above. Useful when disabling
+        --     -- certain features of an LSP (for example, turning off formatting for ts_ls)
+        --     server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        --     require('lspconfig')[server_name].setup(server)
+        --   end,
+        -- },
       }
+      local lspconfig = require 'lspconfig'
+      for _, server_name in ipairs(require('mason-lspconfig').get_installed_servers()) do
+        local server = servers[server_name] or {}
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+        lspconfig[server_name].setup(server)
+      end
     end,
   },
 
@@ -895,6 +980,18 @@ require('lazy').setup({
         'vue',
         'json',
         'sql',
+      },
+      -- Autoinstall languages that are not installed
+      auto_install = true,
+      highlight = {
+        enable = true,
+        'javascript',
+        'typescript',
+        'tsx',
+        'vue',
+        'json',
+        'sql',
+        'php',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
