@@ -636,6 +636,28 @@ require('lazy').setup({
               },
             },
           },
+          emmet_language_server = {
+            filetypes = {
+              'html',
+              'css',
+              'scss',
+              'sass',
+              'less',
+              'javascript',
+              'javascriptreact',
+              'typescript',
+              'typescriptreact',
+              'vue',
+              'svelte',
+              'php',
+            },
+            settings = {
+              emmet = {
+                showExpandedAbbreviation = 'always',
+                showAbbreviationSuggestions = true,
+              },
+            },
+          },
           intelephense = {
             settings = {
               intelephense = {
