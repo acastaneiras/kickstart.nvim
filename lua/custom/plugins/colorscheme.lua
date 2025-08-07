@@ -29,7 +29,7 @@ return {
             FloatTitle = { bg = 'none' },
             -- Cols
             SignColumn = { bg = 'none' },
-            LineNr = { bg = 'none' },
+            LineNr = { fg = '#905922', bg = 'none' },
             CursorLineNr = { bg = 'none' },
 
             -- Transparent Gutter
