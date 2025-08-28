@@ -1022,12 +1022,18 @@ require('lazy').setup({
           enable = true,
           lookahead = true,
           keymaps = {
+            -- Functions
             ['af'] = '@function.outer',
             ['if'] = '@function.inner',
+            -- Classes
             ['ac'] = '@class.outer',
             ['ic'] = '@class.inner',
+            -- Params / Attributes
             ['aa'] = '@parameter.outer',
             ['ia'] = '@parameter.inner',
+            -- Tags HTML/TSX
+            ['at'] = '@tag.outer',
+            ['it'] = '@tag.inner',
           },
         },
         move = {
