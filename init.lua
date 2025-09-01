@@ -93,6 +93,7 @@ vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
 vim.keymap.set('n', '<Tab>', '<cmd>bnext<cr>', { desc = 'Next Buffer' })
 vim.keymap.set('n', '<S-Tab>', '<cmd>bprevious<cr>', { desc = 'Previous Buffer' })
+vim.keymap.set('n', '<leader>tr', ':set relativenumber!<CR>', { desc = 'Toggle relative number' })
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv") -- Shift visual selected line down
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv") -- Shift visual selected line up
 -- Clear highlights on search when pressing <Esc> in normal mode
@@ -345,11 +346,16 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          path_display = {
+            filename_first = {
+              reverse_directories = true,
+            },
+          },
+          -- mappings = {
+          --   i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          -- },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
