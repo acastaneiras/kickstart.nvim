@@ -86,6 +86,7 @@ vim.o.termguicolors = true
 
 vim.keymap.set('i', 'jk', '<Esc>')
 vim.keymap.set('x', '<leader>p', '"_dP', { desc = '[P]aste preserving register' })
+vim.keymap.set({ 'n', 'x' }, '<leader>d', '"_d', { desc = '[D]elete without yanking' })
 vim.keymap.set('n', '<leader>w', ':w<CR>', { desc = '[W]rite File' })
 vim.keymap.set('n', '<C-u>', '<C-u>zz')
 vim.keymap.set('n', '<C-d>', '<C-d>zz')
