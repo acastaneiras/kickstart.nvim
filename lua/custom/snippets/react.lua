@@ -26,6 +26,35 @@ local snippets = {
       }
     )
   ),
+
+  s(
+    'usestate',
+    fmt(
+      [[
+const [{}, {}] = useState({});
+
+    ]],
+      {
+        i(1, 'state'),
+        i(2, 'setState'),
+        i(3, "''"),
+      }
+    )
+  ),
+  s(
+    'useeffect',
+    fmt(
+      [[
+useEffect(() => {{
+  {}
+}}, [{}]);
+    ]],
+      {
+        i(1, '// effect code'),
+        i(2, ''),
+      }
+    )
+  ),
 }
 ls.add_snippets('javascriptreact', snippets)
 ls.add_snippets('typescriptreact', snippets)

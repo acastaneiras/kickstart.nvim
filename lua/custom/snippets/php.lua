@@ -16,9 +16,9 @@ ls.add_snippets('php', {
     t '", "");',
   }),
   s('vare', {
-    t 'echo var_export(',
+    t 'echo "<pre>".var_export(',
     i(1, '$variable'),
-    t ', true);',
+    t ', true)."</pre>";',
   }),
   s('phpe', {
     t '<?= ',
@@ -31,9 +31,9 @@ ls.add_snippets('php', {
     t '", "") ?>',
   }),
   s('pvare', {
-    t '<?= var_export(',
+    t '<?= "<pre>".var_export(',
     i(1, '$variable'),
-    t ', true) ?>',
+    t ', true)."</pre>"; ?>',
   }),
   s(
     'if',
