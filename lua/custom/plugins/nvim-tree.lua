@@ -28,6 +28,7 @@ return {
           enable = true,
         },
       }
+      vim.keymap.set('n', '<leader>c', ':NvimTreeCollapse<CR>', { desc = 'Collapse file tree' })
       vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { desc = 'Toggle file tree' })
     end,
   },
