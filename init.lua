@@ -1016,7 +1016,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    -- main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
@@ -1102,22 +1102,14 @@ require('lazy').setup({
         },
       },
     },
-    config = function()
+    config = function(_, opts)
+      require('nvim-treesitter.configs').setup(opts)
       require('nvim-ts-autotag').setup {
         opts = {
-          -- Defaults
-          enable_close = true, -- Auto close tags
-          enable_rename = true, -- Auto rename pairs of tags
-          enable_close_on_slash = false, -- Auto close on trailing </
+          enable_close = true,
+          enable_rename = true,
+          enable_close_on_slash = false,
         },
-        -- Also override individual filetype configs, these take priority.
-        -- Empty by default, useful if one of the "opts" global settings
-        -- doesn't work well in a specific filetype
-        -- per_filetype = {
-        --   ['html'] = {
-        --     enable_close = false,
-        --   },
-        -- },
       }
     end,
     -- There are additional nvim-treesitter modules that you can use to interact
