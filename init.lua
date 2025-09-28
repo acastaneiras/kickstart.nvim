@@ -1040,7 +1040,6 @@ require('lazy').setup({
         'html',
         'css',
         'javascript',
-        'java',
         'typescript',
         'tsx',
         'vue',
