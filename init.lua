@@ -1,4 +1,15 @@
 vim.o.swapfile = false
+
+-- Configure vim.deprecate to be less noisy for known deprecated APIs that are still needed by plugins
+local original_deprecate = vim.deprecate
+vim.deprecate = function(name, alternative, version, plugin, backtrace)
+  -- Suppress specific deprecation warnings that we know about
+  if name and (name:match("require.*lspconfig") or name:match("lspconfig")) then
+    return -- Ignore lspconfig deprecation warnings as some plugins still need it
+  end
+  return original_deprecate(name, alternative, version, plugin, backtrace)
+end
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -627,136 +638,116 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
-        mason = {
-          lua_ls = {
-            -- cmd = { ... },
-            -- filetypes = { ... },
-            -- capabilities = {},
-            settings = {
-              Lua = {
-                completion = {
-                  callSnippet = 'Replace',
-                },
-                -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-                -- diagnostics = { disable = { 'missing-fields' } },
-              },
-            },
-          },
-          emmet_language_server = {
-            filetypes = {
-              'html',
-              'css',
-              'scss',
-              'sass',
-              'less',
-              'javascript',
-              'javascriptreact',
-              'typescript',
-              'typescriptreact',
-              'vue',
-              'svelte',
-              'php',
-            },
-            settings = {
-              emmet = {
-                showExpandedAbbreviation = 'always',
-                showAbbreviationSuggestions = true,
-              },
-            },
-          },
-          intelephense = {
-            settings = {
-              intelephense = {
-                stubs = {
-                  'bcmath',
-                  'bz2',
-                  'Core',
-                  'curl',
-                  'date',
-                  'dom',
-                  'fileinfo',
-                  'filter',
-                  'gd',
-                  'gettext',
-                  'hash',
-                  'iconv',
-                  'imap',
-                  'intl',
-                  'json',
-                  'libxml',
-                  'mbstring',
-                  'mcrypt',
-                  'mysql',
-                  'mysqli',
-                  'password',
-                  'pcntl',
-                  'pcre',
-                  'PDO',
-                  'pdo_mysql',
-                  'Phar',
-                  'readline',
-                  'regex',
-                  'session',
-                  'SimpleXML',
-                  'sockets',
-                  'sodium',
-                  'standard',
-                  'superglobals',
-                  'tokenizer',
-                  'xml',
-                  'xdebug',
-                  'xmlreader',
-                  'xmlwriter',
-                  'yaml',
-                  'zip',
-                  'zlib',
-                  'wordpress',
-                  'wordpress-stubs',
-                  'woocommerce-stubs',
-                  'acf-pro-stubs',
-                  'wordpress-globals',
-                  'wp-cli-stubs',
-                  'genesis-stubs',
-                  'polylang-stubs',
-                },
-                environment = {
-                  includePaths = {
-                    '~/.config/composer/vendor/php-stubs/',
-                    '~/.config/composer/vendor/wpsyntex/',
-                  },
-                },
-                files = {
-                  maxSize = 10000000,
-                  exclude = {
-                    '**/node_modules/**',
-                    '**/vendor/**/test/**',
-                    '**/vendor/**/tests/**',
-                    '**/cache/**',
-                    '**/tmp/**',
-                  },
-                },
-                completion = {
-                  triggerParameterHints = true,
-                  maxItems = 100,
-                  insertUseDeclaration = true,
-                },
+        lua_ls = {
+          settings = {
+            Lua = {
+              completion = {
+                callSnippet = 'Replace',
               },
             },
           },
         },
-        others = {},
+        emmet_language_server = {
+          filetypes = {
+            'html',
+            'css',
+            'scss',
+            'sass',
+            'less',
+            'javascript',
+            'javascriptreact',
+            'typescript',
+            'typescriptreact',
+            'vue',
+            'svelte',
+            'php',
+          },
+          settings = {
+            emmet = {
+              showExpandedAbbreviation = 'always',
+              showAbbreviationSuggestions = true,
+            },
+          },
+        },
+        intelephense = {
+          settings = {
+            intelephense = {
+              stubs = {
+                'bcmath',
+                'bz2',
+                'Core',
+                'curl',
+                'date',
+                'dom',
+                'fileinfo',
+                'filter',
+                'gd',
+                'gettext',
+                'hash',
+                'iconv',
+                'imap',
+                'intl',
+                'json',
+                'libxml',
+                'mbstring',
+                'mcrypt',
+                'mysql',
+                'mysqli',
+                'password',
+                'pcntl',
+                'pcre',
+                'PDO',
+                'pdo_mysql',
+                'Phar',
+                'readline',
+                'regex',
+                'session',
+                'SimpleXML',
+                'sockets',
+                'sodium',
+                'standard',
+                'superglobals',
+                'tokenizer',
+                'xml',
+                'xdebug',
+                'xmlreader',
+                'xmlwriter',
+                'yaml',
+                'zip',
+                'zlib',
+                'wordpress',
+                'wordpress-stubs',
+                'woocommerce-stubs',
+                'acf-pro-stubs',
+                'wordpress-globals',
+                'wp-cli-stubs',
+                'genesis-stubs',
+                'polylang-stubs',
+              },
+              environment = {
+                includePaths = {
+                  '~/.config/composer/vendor/php-stubs/',
+                  '~/.config/composer/vendor/wpsyntex/',
+                },
+              },
+              files = {
+                maxSize = 10000000,
+                exclude = {
+                  '**/node_modules/**',
+                  '**/vendor/**/test/**',
+                  '**/vendor/**/tests/**',
+                  '**/cache/**',
+                  '**/tmp/**',
+                },
+              },
+              completion = {
+                triggerParameterHints = true,
+                maxItems = 100,
+                insertUseDeclaration = true,
+              },
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -768,7 +759,7 @@ require('lazy').setup({
       -- You can press `g?` for help in this menu.
       --
       -- `mason` had to be setup earlier: to configure its options see the
-      -- `dependencies` table for `nvim-lspconfig` above.
+      -- `dependencies` table for `lsp-config` above.
       --
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -779,21 +770,20 @@ require('lazy').setup({
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
       -- Either merge all additional server configs from the `servers.mason` and `servers.others` tables
-      -- to the default language server configs as provided by nvim-lspconfig or
-      -- define a custom server config that's unavailable on nvim-lspconfig.
-      for server, config in pairs(vim.tbl_extend('keep', servers.mason, servers.others)) do
-        if not vim.tbl_isempty(config) then
-          vim.lsp.config(server, config)
-        end
-      end
+      -- to the default language server configs as provided by vim.lsp.config or
+      -- define a custom server config that's unavailable with default configs.
       require('mason-lspconfig').setup {
-        ensure_installed = {},
+        ensure_installed = vim.tbl_keys(servers),
         automatic_enable = true,
       }
-      -- Manually run vim.lsp.enable for all language servers that are *not* installed via Mason
-      if not vim.tbl_isempty(servers.others) then
-        vim.lsp.enable(vim.tbl_keys(servers.others))
+      for server, config in pairs(servers) do
+        -- Add capabilities to each config
+        config.capabilities = vim.tbl_deep_extend('force', {}, capabilities, config.capabilities or {})
+        vim.lsp.config(server, config)
       end
+
+      -- Enable all configured servers
+      vim.lsp.enable(vim.tbl_keys(servers))
     end,
   },
 
@@ -1017,7 +1007,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    -- main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
@@ -1037,7 +1027,6 @@ require('lazy').setup({
         'vim',
         'vimdoc',
         'php',
-        'html',
         'css',
         'javascript',
         'typescript',
@@ -1045,18 +1034,6 @@ require('lazy').setup({
         'vue',
         'json',
         'sql',
-      },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        'javascript',
-        'typescript',
-        'tsx',
-        'vue',
-        'json',
-        'sql',
-        'php',
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
@@ -1104,14 +1081,15 @@ require('lazy').setup({
       },
     },
     config = function(_, opts)
+      -- Setup treesitter
       require('nvim-treesitter.configs').setup(opts)
-      require('nvim-ts-autotag').setup {
-        opts = {
-          enable_close = true,
-          enable_rename = true,
-          enable_close_on_slash = false,
-        },
-      }
+      
+      -- Setup autotag separately
+      require('nvim-ts-autotag').setup({
+        enable_close = true,
+        enable_rename = true,
+        enable_close_on_slash = false,
+      })
     end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
