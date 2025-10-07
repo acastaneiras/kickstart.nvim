@@ -4,7 +4,7 @@ vim.o.swapfile = false
 local original_deprecate = vim.deprecate
 vim.deprecate = function(name, alternative, version, plugin, backtrace)
   -- Suppress specific deprecation warnings that we know about
-  if name and (name:match("require.*lspconfig") or name:match("lspconfig")) then
+  if name and (name:match 'require.*lspconfig' or name:match 'lspconfig') then
     return -- Ignore lspconfig deprecation warnings as some plugins still need it
   end
   return original_deprecate(name, alternative, version, plugin, backtrace)
@@ -1083,15 +1083,15 @@ require('lazy').setup({
     config = function(_, opts)
       -- Setup treesitter
       require('nvim-treesitter.configs').setup(opts)
-      
+
       -- Setup autotag separately
-      require('nvim-ts-autotag').setup({
+      require('nvim-ts-autotag').setup {
         opts = {
           enable_close = true,
           enable_rename = true,
           enable_close_on_slash = false,
-        }
-      })
+        },
+      }
     end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:

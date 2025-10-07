@@ -27,6 +27,11 @@ return {
         update_focused_file = {
           enable = true,
         },
+        on_attach = function(bufnr)
+          local api = require 'nvim-tree.api'
+          api.config.mappings.default_on_attach(bufnr)
+          vim.keymap.del('n', 's', { buffer = bufnr })
+        end,
       }
       vim.keymap.set('n', '<leader>c', ':NvimTreeCollapse<CR>', { desc = 'Collapse file tree' })
       vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { desc = 'Toggle file tree' })
