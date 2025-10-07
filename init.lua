@@ -1086,9 +1086,11 @@ require('lazy').setup({
       
       -- Setup autotag separately
       require('nvim-ts-autotag').setup({
-        enable_close = true,
-        enable_rename = true,
-        enable_close_on_slash = false,
+        opts = {
+          enable_close = true,
+          enable_rename = true,
+          enable_close_on_slash = false,
+        }
       })
     end,
     -- There are additional nvim-treesitter modules that you can use to interact
