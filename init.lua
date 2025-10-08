@@ -374,6 +374,8 @@ require('lazy').setup({
             '--column',
             '--smart-case',
             '--fixed-strings',
+            '--path-separator',
+            '/',
           },
           -- mappings = {
           --   i = { ['<c-enter>'] = 'to_fuzzy_refine' },
