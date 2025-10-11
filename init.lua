@@ -1,15 +1,5 @@
 vim.o.swapfile = false
 
--- Configure vim.deprecate to be less noisy for known deprecated APIs that are still needed by plugins
-local original_deprecate = vim.deprecate
-vim.deprecate = function(name, alternative, version, plugin, backtrace)
-  -- Suppress specific deprecation warnings that we know about
-  if name and (name:match 'require.*lspconfig' or name:match 'lspconfig') then
-    return -- Ignore lspconfig deprecation warnings as some plugins still need it
-  end
-  return original_deprecate(name, alternative, version, plugin, backtrace)
-end
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -649,6 +639,29 @@ require('lazy').setup({
             },
           },
         },
+        vtsls = {
+          filetypes = {
+            'javascript',
+            'javascriptreact',
+            'typescript',
+            'typescriptreact',
+          },
+          settings = {
+            vtsls = {
+              autoUseWorkspaceTsdk = true,
+            },
+            typescript = {
+              preferences = {
+                autoClosingTags = true,
+              },
+            },
+            javascript = {
+              preferences = {
+                autoClosingTags = true,
+              },
+            },
+          },
+        },
         emmet_language_server = {
           filetypes = {
             'html',
@@ -768,7 +781,9 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers.mason or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'vtsls',
         'tailwindcss',
+        'intelephense',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
       -- Either merge all additional server configs from the `servers.mason` and `servers.others` tables
