@@ -721,6 +721,7 @@ require('lazy').setup({
         -- Special Lua Config, as recommended by neovim help docs
         lua_ls = {
           on_init = function(client)
+            client.server_capabilities.documentFormattingProvider = false -- Disable formatting (formatting is done by stylua)
             if client.workspace_folders then
               local path = client.workspace_folders[1].name
               if path ~= vim.fn.stdpath 'config' and (vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc')) then return end
@@ -743,7 +744,9 @@ require('lazy').setup({
             })
           end,
           settings = {
-            Lua = {},
+            Lua = {
+              format = { enable = false }, -- Disable formatting (formatting is done by stylua)
+            },
           },
         },
       }
@@ -755,9 +758,6 @@ require('lazy').setup({
       --    :Mason
       --
       -- You can press `g?` for help in this menu.
-
-      -- Note: We manually specify Mason package names here instead of using vim.tbl_keys(servers)
-      -- because LSP server names don't always match Mason package names
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         -- You can add other tools here that you want Mason to install
@@ -785,7 +785,7 @@ require('lazy').setup({
     keys = {
       {
         '<leader>f',
-        function() require('conform').format { async = true, lsp_format = 'fallback' } end,
+        function() require('conform').format { async = true } end,
         mode = '',
         desc = '[F]ormat buffer',
       },
@@ -795,41 +795,35 @@ require('lazy').setup({
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true, php = true, css = true, javascript = true, typescript = true }
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          return nil
+        -- You can specify filetypes to autoformat on save here:
+        local enabled_filetypes = {
+          lua = true,
+        }
+        if enabled_filetypes[vim.bo[bufnr].filetype] then
+          return { timeout_ms = 500 }
         else
-          return {
-            timeout_ms = 500,
-            lsp_format = 'fallback',
-          }
+          return nil
         end
       end,
-      formatters_by_ft = (function()
+      default_format_opts = {
+        lsp_format = 'fallback', -- Use external formatters if configured below, otherwise use LSP formatting. Set to `false` to disable LSP formatting entirely.
+      },
+      formatters_by_ft = {
+        -- rust = { 'rustfmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
-        local prettier_fts = {
-          'javascript',
-          'javascriptreact',
-          'typescript',
-          'typescriptreact',
-          'json',
-          'html',
-          'css',
-          'markdown',
-        }
-        local config = { lua = { 'stylua' } }
-        for _, filetype in ipairs(prettier_fts) do
-          config[filetype] = { 'prettierd' }
-        end
-        return config
-      end)(),
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettierd', 'prettier', stop_after_first = true },
+        json = { 'prettierd', 'prettier', stop_after_first = true },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        css = { 'prettierd', 'prettier', stop_after_first = true },
+        markdown = { 'prettierd', 'prettier', stop_after_first = true },
+        lua = { 'stylue' },
+      },
     },
   },
 
@@ -904,6 +898,7 @@ require('lazy').setup({
         -- Adjusts spacing to ensure icons are aligned
         nerd_font_variant = 'mono',
       },
+
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
@@ -977,9 +972,16 @@ require('lazy').setup({
       --
       -- Examples:
       --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
+      --  - yiiq - [Y]ank [I]nside [I]+1 [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      require('mini.ai').setup {
+        -- NOTE: Avoid conflicts with the built-in incremental selection mappings on Neovim>=0.12 (see `:help treesitter-incremental-selection`)
+        mappings = {
+          around_next = 'aa',
+          inside_next = 'ii',
+        },
+        n_lines = 500,
+      }
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -1008,15 +1010,13 @@ require('lazy').setup({
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    lazy = false,
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
-      'windwp/nvim-ts-autotag',
-    },
-    opts = {
-      ensure_installed = {
+    branch = 'main',
+    -- [[ Configure Treesitter ]] See `:help nvim-treesitter-intro`
+    config = function()
+      -- ensure basic parser are installed
+      local parsers = {
         'bash',
         'c',
         'diff',
@@ -1036,64 +1036,52 @@ require('lazy').setup({
         'vue',
         'json',
         'sql',
-      },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true,
-          keymaps = {
-            -- Functions
-            ['af'] = '@function.outer',
-            ['if'] = '@function.inner',
-            -- Classes
-            ['ac'] = '@class.outer',
-            ['ic'] = '@class.inner',
-            -- Params / Attributes
-            ['aa'] = '@parameter.outer',
-            ['ia'] = '@parameter.inner',
-            -- Tags HTML/TSX
-            ['at'] = '@tag.outer',
-            ['it'] = '@tag.inner',
-          },
-        },
-        move = {
-          enable = true,
-          set_jumps = true,
-          goto_next_start = {
-            [']m'] = '@function.outer',
-            [']]'] = '@class.outer',
-            [']a'] = '@parameter.inner',
-          },
-          goto_previous_start = {
-            ['[m'] = '@function.outer',
-            ['[['] = '@class.outer',
-            ['[a'] = '@parameter.inner',
-          },
-        },
-      },
-    },
-    config = function(_, opts)
-      -- Setup treesitter
-      require('nvim-treesitter.configs').setup(opts)
-
-      -- Setup autotag separately
-      require('nvim-ts-autotag').setup {
-        opts = {
-          enable_close = true,
-          enable_rename = true,
-          enable_close_on_slash = false,
-        },
       }
+      require('nvim-treesitter').install(parsers)
+
+      ---@param buf integer
+      ---@param language string
+      local function treesitter_try_attach(buf, language)
+        -- check if parser exists and load it
+        if not vim.treesitter.language.add(language) then return end
+        -- enables syntax highlighting and other treesitter features
+        vim.treesitter.start(buf, language)
+
+        -- enables treesitter based folds
+        -- for more info on folds see `:help folds`
+        -- vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+        -- vim.wo.foldmethod = 'expr'
+
+        -- check if treesitter indentation is available for this language, and if so enable it
+        -- in case there is no indent query, the indentexpr will fallback to the vim's built in one
+        local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
+
+        -- enables treesitter based indentation
+        if has_indent_query then vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()" end
+      end
+
+      local available_parsers = require('nvim-treesitter').get_available()
+      vim.api.nvim_create_autocmd('FileType', {
+        callback = function(args)
+          local buf, filetype = args.buf, args.match
+
+          local language = vim.treesitter.language.get_lang(filetype)
+          if not language then return end
+
+          local installed_parsers = require('nvim-treesitter').get_installed 'parsers'
+
+          if vim.tbl_contains(installed_parsers, language) then
+            -- enable the parser if it is installed
+            treesitter_try_attach(buf, language)
+          elseif vim.tbl_contains(available_parsers, language) then
+            -- if a parser is available in `nvim-treesitter` auto install it, and enable it after the installation is done
+            require('nvim-treesitter').install(language):await(function() treesitter_try_attach(buf, language) end)
+          else
+            -- try to enable treesitter features in case the parser exists but is not available from `nvim-treesitter`
+            treesitter_try_attach(buf, language)
+          end
+        end,
+      })
     end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -1114,9 +1102,10 @@ require('lazy').setup({
   --
   require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommended keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.

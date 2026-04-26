@@ -1,9 +1,29 @@
 return {
   {
-    'dmmulroy/ts-error-translator.nvim',
+    'windwp/nvim-ts-autotag',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
     config = function()
-      require('ts-error-translator').setup()
+      require('nvim-ts-autotag').setup {
+        opts = {
+          -- Defaults
+          enable_close = true, -- Auto close tags
+          enable_rename = true, -- Auto rename pairs of tags
+          enable_close_on_slash = false, -- Auto close on trailing </
+        },
+        -- Also override individual filetype configs, these take priority.
+        -- Empty by default, useful if one of the "opts" global settings
+        -- doesn't work well in a specific filetype
+        per_filetype = {
+          ['html'] = {
+            enable_close = false,
+          },
+        },
+      }
     end,
+  },
+  {
+    'dmmulroy/ts-error-translator.nvim',
+    config = function() require('ts-error-translator').setup() end,
     ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
   },
   {
@@ -20,37 +40,64 @@ return {
             local opts = { noremap = true, silent = true, buffer = bufnr }
 
             -- Imports
-            keymap('n', '<leader>zo', function()
-              require('vtsls').commands.organize_imports(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Organize imports' }))
-            keymap('n', '<leader>zs', function()
-              require('vtsls').commands.sort_imports(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Sort imports' }))
-            keymap('n', '<leader>zu', function()
-              require('vtsls').commands.remove_unused_imports(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Remove unused imports' }))
-            keymap('n', '<leader>za', function()
-              require('vtsls').commands.add_missing_imports(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Add missing imports' }))
+            keymap(
+              'n',
+              '<leader>zo',
+              function() require('vtsls').commands.organize_imports(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Organize imports' })
+            )
+            keymap(
+              'n',
+              '<leader>zs',
+              function() require('vtsls').commands.sort_imports(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Sort imports' })
+            )
+            keymap(
+              'n',
+              '<leader>zu',
+              function() require('vtsls').commands.remove_unused_imports(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Remove unused imports' })
+            )
+            keymap(
+              'n',
+              '<leader>za',
+              function() require('vtsls').commands.add_missing_imports(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Add missing imports' })
+            )
 
             -- Code cleanup / fixes
-            keymap('n', '<leader>zx', function()
-              require('vtsls').commands.remove_unused(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Remove unused statements' }))
-            keymap('n', '<leader>zf', function()
-              require('vtsls').commands.fix_all(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Fix all issues' }))
+            keymap(
+              'n',
+              '<leader>zx',
+              function() require('vtsls').commands.remove_unused(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Remove unused statements' })
+            )
+            keymap(
+              'n',
+              '<leader>zf',
+              function() require('vtsls').commands.fix_all(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Fix all issues' })
+            )
 
             -- Navigation / Refactor
-            keymap('n', 'gZ', function()
-              require('vtsls').commands.goto_source_definition(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Go to source definition' }))
-            keymap('n', '<leader>zn', function()
-              require('vtsls').commands.rename_file(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Rename current file' }))
-            keymap('n', '<leader>zr', function()
-              require('vtsls').commands.file_references(bufnr)
-            end, vim.tbl_extend('force', opts, { desc = '[vtsls] Find file references' }))
+            keymap(
+              'n',
+              'gZ',
+              function() require('vtsls').commands.goto_source_definition(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Go to source definition' })
+            )
+            keymap(
+              'n',
+              '<leader>zn',
+              function() require('vtsls').commands.rename_file(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Rename current file' })
+            )
+            keymap(
+              'n',
+              '<leader>zr',
+              function() require('vtsls').commands.file_references(bufnr) end,
+              vim.tbl_extend('force', opts, { desc = '[vtsls] Find file references' })
+            )
           end
         end,
       })

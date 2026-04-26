@@ -6,6 +6,22 @@ local rep = require('luasnip.extras').rep
 
 local snippets = {
   s(
+    'af',
+    fmt('const {} = ({}) => {{\n  {}\n}};', {
+      i(1, 'funcName'),
+      i(2),
+      i(3, '// body'),
+    })
+  ),
+  s(
+    'fn',
+    fmt('function {}({}) {{\n  {}\n}}', {
+      i(1, 'funcName'),
+      i(2),
+      i(3, '// body'),
+    })
+  ),
+  s(
     'rafce',
     fmt(
       [[
