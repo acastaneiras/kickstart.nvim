@@ -97,6 +97,26 @@ vim.keymap.set('n', '<S-Tab>', '<cmd>bprevious<cr>', { desc = 'Previous Buffer' 
 vim.keymap.set('n', '<leader>tr', ':set relativenumber!<CR>', { desc = 'Toggle relative number' })
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv") -- Shift visual selected line down
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv") -- Shift visual selected line up
+
+-- Copy a file reference for AI agents (e.g. @src/app.ts#L10-15) to the clipboard
+local function yank_file_reference()
+  local path = vim.fn.expand '%:.'
+  if path == '' then return vim.notify('Buffer has no file', vim.log.levels.WARN) end
+  local ref = '@' .. path
+  local mode = vim.fn.mode()
+  if mode == 'v' or mode == 'V' or mode == '\22' then
+    local s, e = vim.fn.line 'v', vim.fn.line '.'
+    if s > e then
+      s, e = e, s
+    end
+    ref = ref .. (s == e and ('#L' .. s) or ('#L' .. s .. '-' .. e))
+    vim.api.nvim_feedkeys(vim.keycode '<Esc>', 'n', false)
+  end
+  vim.fn.setreg('+', ref)
+  vim.notify('Copied ' .. ref)
+end
+vim.keymap.set({ 'n', 'x' }, '<leader>yr', yank_file_reference, { desc = '[Y]ank file [R]eference for AI' })
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
